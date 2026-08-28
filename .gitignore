@@ -6,9 +6,3 @@ immortalwrt-mt798x-6.6/
 
 # Local compiler cache
 .cache/
-
-# Router-specific raw flash backups; never publish these device artifacts
-NX30Pro/mtd1_BL2
-NX30Pro/mtd3_Factory
-NX30Pro/mtd4_FIP
-NX30Pro/mtd5_ubi
