@@ -1,0 +1,13 @@
+.git
+.codex
+immortalwrt-mt798x-6.6
+NX30Pro
+NX30Pro免拆机Telnet
+NX30Pro免拆机Telnet.zip
+.cache
+*.log
+bin
+build_dir
+dl
+staging_dir
+tmp
