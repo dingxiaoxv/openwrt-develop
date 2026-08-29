@@ -1,77 +1,46 @@
-# H3C Magic NX30 Pro 免拆机刷机流程
+# H3C Magic NX30 Pro：官方源码构建与刷机
 
-本流程只保留已实际验证的路线：原厂 `V100R010` → 导入本地 Telnet 配置 → SSH → 备份 → Hanwckf U-Boot → NMBM 固件。
+## 适用范围
 
-## 文件与前提
+- 设备：H3C Magic NX30 Pro。
+- 已完成引导前提：Hanwckf `mt7981_h3c_magic-nx30-pro-fip-fixed-parts.bin` 已写入 FIP。
+- 固件：官方 `immortalwrt/immortalwrt`，分支 `openwrt-24.10`。
+- 官方 profile：`mediatek/filogic` / `h3c_magic-nx30-pro-nmbm`。
+- 构建配置：[h3c-magic-nx30-pro-nmbm-openclash.config](defconfig/h3c-magic-nx30-pro-nmbm-openclash.config)。
 
-- 路由器：H3C Magic NX30 Pro。
-- 原厂版本：**仅 `V100R010`**。
-- 已验证的配置包：[NX30Pro免拆机Telnet.zip](NX30Pro/NX30Pro免拆机Telnet.zip)。解压后得到 `decoded-NX30Pro-finished.cfg`；虽然文件名带 `decoded`，它实际是可由原厂 WebUI 直接恢复的 XOR 封装配置，不要再次解码。
-- 配置包 SHA-256：`adce52dd5aaae1f874d09886453ef836366c01b2148018425ee3a550fd5bcb63`
-- Hanwckf U-Boot：`mt7981_h3c_magic-nx30-pro-fip-fixed-parts.bin`。
-- 后续固件 profile：`h3c_magic-nx30-pro-nmbm`，首次刷 `factory.bin`，后续升级使用 `sysupgrade.bin`。
+该引导链只能使用 NMBM layout。不要选择不带 `-nmbm` 的 OpenWrt U-Boot layout profile，也不要刷 `.itb`。
 
-刷写 FIP 时不能断电。不要刷其它机型的 U-Boot，也不要把 OpenWrt U-Boot-layout 镜像混入本流程。
+## 原厂免拆机与 U-Boot 路线
 
-## SHA-256 核对
+本节保留已验证的设备专属操作；它与统一编译 SOP 独立。
 
-在电脑或路由器上均可执行：
+### 原厂 V100R010：启用临时 Telnet
 
-```sh
-sha256sum 文件名
-```
+仅适用于原厂 `V100R010`。在原厂 WebUI `http://192.168.124.1` 的“更多 → 设备管理 → 配置备份”中，先导出现有配置，再恢复 [NX30Pro免拆机Telnet.zip](NX30Pro/NX30Pro免拆机Telnet.zip) 解压出的 `decoded-NX30Pro-finished.cfg`。不要再次解码该文件。
 
-输出的前 64 位字符是 SHA-256。传文件后，电脑与路由器对同一文件执行该命令，两个 64 位结果必须完全一致。
-
-例如核对本地 Telnet 配置包：
-
-```sh
-sha256sum NX30Pro免拆机Telnet/decoded-NX30Pro-finished.cfg
-```
-
-它应为：
+配置包 SHA-256：
 
 ```text
 adce52dd5aaae1f874d09886453ef836366c01b2148018425ee3a550fd5bcb63
 ```
 
-## 1. 导入 Telnet 配置
-
-1. 登录原厂 WebUI：`http://192.168.124.1`。
-2. 进入“更多 → 设备管理 → 配置备份”。
-3. 先导出并保存当前原厂配置。
-4. 解压 [NX30Pro免拆机Telnet.zip](NX30Pro/NX30Pro免拆机Telnet.zip)，选择恢复其中的 `decoded-NX30Pro-finished.cfg`。
-5. 完成恢复后，将路由器断电再上电，等待完全启动。
-
-恢复该配置后，Wi-Fi 密码和原厂 Web 管理密码均为：
-
-```text
-77777777
-```
-
-该配置会在 LAN 上启动一个无密码 root Telnet：
+恢复并重启后，原厂 Web/Wi-Fi 密码为 `77777777`，LAN 会出现无密码 root Telnet：
 
 ```sh
 telnet 192.168.124.1 7788
 ```
 
-进入后应直接看到 root shell，例如：
+该 Telnet 未认证，只能在可信 LAN 内短时使用。
 
-```text
-/ #
-```
+### 联网、校时、SSH 与备份
 
-此 Telnet 未认证，只能在可信的本地有线网络短时间使用，不能暴露到 WAN。
-
-## 2. 联网、校时并开启 SSH
-
-先让原厂系统正常联网。确认时间不是 `1970`：
+先确认原厂系统已联网、时间不是 1970：
 
 ```sh
 date
 ```
 
-时间正确后，在 Telnet shell 中执行：
+再在 Telnet shell 执行：
 
 ```sh
 curl -o /tmp/dropbear.ipk https://downloads.openwrt.org/releases/packages-19.07/aarch64_cortex-a53/base/dropbear_2019.78-2_aarch64_cortex-a53.ipk
@@ -80,52 +49,22 @@ opkg install /tmp/dropbear.ipk
 /etc/init.d/dropbear start
 ```
 
-从电脑验证 SSH：
-
-```sh
-ssh root@192.168.124.1
-```
-
-用户名和密码为：
-
-```text
-username: root
-password: admin
-```
-
-## 3. 备份原厂分区
-
-通过 SSH 先检查分区，再依次导出备份。先备份最大的 `ubi`，传到电脑后再备份小分区，避免 `/tmp` 空间不足：
+SSH 凭据为 `root` / `admin`。写 FIP 前必须导出原厂分区；先导出大 `ubi`，再导出 `BL2`、`Factory`、`FIP`：
 
 ```sh
 cat /proc/mtd
 dd if=/dev/mtd5 of=/tmp/mtd5_ubi
-```
-
-从电脑导出 `mtd5_ubi` 后，回到路由器执行：
-
-```sh
-rm /tmp/mtd5_ubi
+# 导出 mtd5 后，再执行：
 dd if=/dev/mtd1 of=/tmp/mtd1_BL2
 dd if=/dev/mtd3 of=/tmp/mtd3_Factory
 dd if=/dev/mtd4 of=/tmp/mtd4_FIP
 ```
 
-把这三个文件也导出到电脑并长期保存。尤其不要丢失 `mtd3_Factory`。
+尤其不能丢失 `mtd3_Factory`。
 
-## 4. 刷入 Hanwckf U-Boot
+### 写入 Hanwckf FIP
 
-将 `mt7981_h3c_magic-nx30-pro-fip-fixed-parts.bin` 上传到路由器 `/tmp`，核对 SHA-256 后执行：
-
-```sh
-# 电脑端
-sha256sum mt7981_h3c_magic-nx30-pro-fip-fixed-parts.bin
-
-# 路由器端
-sha256sum /tmp/mt7981_h3c_magic-nx30-pro-fip-fixed-parts.bin
-```
-
-两端结果完全一致后再执行：
+上传 `mt7981_h3c_magic-nx30-pro-fip-fixed-parts.bin` 到 `/tmp`，两端 `sha256sum` 一致后执行：
 
 ```sh
 mtd write /tmp/mt7981_h3c_magic-nx30-pro-fip-fixed-parts.bin FIP
@@ -133,34 +72,48 @@ sync
 reboot
 ```
 
-本步骤只写 `FIP`，不写 `BL2`、`Factory` 或 `ubi`。
+本步骤只写 `FIP`，不写 `BL2`、`Factory` 或 `ubi`。随后按住 Reset 通电至少 15 秒，电脑设 `192.168.1.100/24`，访问 `http://192.168.1.1` 确认 Hanwckf U-Boot WebUI。
 
-## 5. 确认 U-Boot 并刷入固件
+## 构建
 
-1. 路由器断电。
-2. 按住 Reset 后通电，保持至少 15 秒。
-3. 电脑连接 LAN，设为静态 IP `192.168.1.100/24`。
-4. 打开 `http://192.168.1.1`，确认 Hanwckf U-Boot WebUI。
-5. 上传自编译的 `*h3c_magic-nx30-pro-nmbm*factory.bin`。
+严格按 [官方源码编译 SOP](official-source-build-sop.md) 执行。在 SOP 的“导入机型配置”步骤使用：
 
-系统首次启动后，后续升级使用同一 NMBM profile 的 `sysupgrade.bin`。
+```sh
+cp -f /build-config/h3c-magic-nx30-pro-nmbm-openclash.config .config
+make defconfig
+```
 
-## Troubleshooting
+构建前确认：
+
+```sh
+grep -E 'CONFIG_TARGET_DEVICE_mediatek_filogic_DEVICE_h3c_magic-nx30-pro-nmbm|CONFIG_PACKAGE_kmod-mt7915e|CONFIG_PACKAGE_kmod-mt7981-firmware|CONFIG_PACKAGE_mt7981-wo-firmware|CONFIG_PACKAGE_luci-app-openclash' .config
+```
+
+构建完成后，manifest 必须包含 `kmod-mt7915e`、`kmod-mt7981-firmware`、`mt7981-wo-firmware`、`wpad-openssl`。否则固件可能能启动但没有无线，禁止升级。
+
+## 产物与刷机边界
+
+- Hanwckf U-Boot WebUI 首刷：`*h3c_magic-nx30-pro-nmbm*squashfs-factory.bin`
+- 已运行 NMBM ImmortalWrt 后升级：`*h3c_magic-nx30-pro-nmbm*squashfs-sysupgrade.bin`
+
+首刷前在电脑端计算 SHA-256；U-Boot WebUI 仅上传 `factory.bin`。系统已经运行后只用同一 NMBM profile 的 `sysupgrade.bin`，无需再次刷 FIP。
+
+## 首次启动验收
+
+1. 访问 `http://192.168.1.1`，确认 LuCI 可用。
+2. 确认 LAN、WAN 和无线 radio 均出现；无线缺失时停止，不要尝试在 LuCI 中“补开”。
+3. 确认 WAN/DNS 正常后，在“服务 → OpenClash → 版本更新”下载推荐 Mihomo 内核。
+
+## 故障定位
+
+### `make menuconfig` 提示终端尺寸不足
+
+在新开的独立系统终端中运行 Docker 和 `make menuconfig`，不使用 VS Code 内置终端。终端至少需要 `80` 列、`19` 行。
+
+### 无线 radio 缺失
+
+先检查本次固件的 manifest 是否包含上面的四个无线相关包。若没有，说明构建配置或源码不符合 SOP；重新使用官方源码和本机型配置片段构建，不在路由器上临时安装不匹配的 kmod。
 
 ### `curl: (77) CA signer not available for verification`
 
-首先检查时间：
-
-```sh
-date
-```
-
-如果显示 `Thu Jan 1 ... 1970`，说明路由器尚未联网，NTP 无法同步时间。TLS 会把 HTTPS 证书判断为尚未生效，因此 `curl` 无法下载 `dropbear`。
-
-恢复 WAN 联网，等待时间自动同步为当前日期后再重试 `curl`。不要用 `curl -k` 绕过证书校验。
-
-## 参考
-
-- [新版 V100R009/R010 免拆机思路](https://chariri.moe/archives/2383/h3c-nx30-pro-openwrt-new-stock-firmware-no-ttl/)
-- [用户实际参考的恩山帖子](https://www.right.com.cn/forum/thread-8460938-1-1.html)
-- [Hanwckf bl-mt798x](https://github.com/hanwckf/bl-mt798x)
+原厂系统显示 `1970` 时说明 WAN/NTP 未就绪，HTTPS 证书会校验失败。恢复 WAN 联网并等待校时后重试；不要使用 `curl -k` 绕过校验。

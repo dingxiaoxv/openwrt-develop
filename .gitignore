@@ -3,6 +3,7 @@
 
 # Upstream source checkout and all of its build outputs
 immortalwrt-mt798x-6.6/
+immortalwrt-official-24.10/
 
 # Local compiler cache
 .cache/
