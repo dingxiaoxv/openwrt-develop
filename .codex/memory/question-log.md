@@ -2,6 +2,7 @@
 
 | Date | Request | Related Issue | Output |
 | --- | --- | --- | --- |
+| `2026-08-29` | research and complete the current Hanwckf U-Boot migration procedures for CMCC RAX3000M eMMC and Redmi AX6000 | `OWRT-0003` | verified Hanwckf release `20241115` is latest; added backup/verification/flash/recovery-WebUI flows, and corrected Redmi AX6000 from incompatible official `ubootmod` images to the Hanwckf-compatible official stock layout |
 | `2026-08-29` | preserve router-specific flashing techniques while rewriting only the common build workflow | `OWRT-0003` | rebuilt the three router guides around the official-source SOP while restoring NX30 Pro no-TTL/backup/FIP steps, CMCC eMMC migration guidance, and Redmi U-Boot/manual-core details |
 | `2026-08-29` | publish the official Debian 11 build image and remove prior build workflows from operational documentation | `OWRT-0003` | pushed and manifest-verified `dingyanxu/openwrt-buildenv:immortalwrt-official-24.10-debian11`; rewrote all router workflows around the common official-source SOP, replaced the old Debian 12 Dockerfile, and isolated old addresses in `legacy-build-environment.md` |
 | `2026-08-29` | create a new Docker image that follows the official source's recommended build environment | `OWRT-0003` | created and locally built `openwrt-buildenv:immortalwrt-official-24.10-debian11` from Debian 11 and the complete official APT list; validated non-root builder, Make, GCC, Perl prereqs, ncurses, writable mounts, and `upx-ucl` |

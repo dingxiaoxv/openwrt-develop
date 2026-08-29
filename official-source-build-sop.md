@@ -17,7 +17,7 @@
 | --- | --- | --- | --- | --- |
 | H3C Magic NX30 Pro（Hanwckf FIP） | `mediatek/filogic` / `h3c_magic-nx30-pro-nmbm` | `kmod-mt7915e`、`kmod-mt7981-firmware`、`mt7981-wo-firmware` | `*nmbm*factory.bin` | `*nmbm*sysupgrade.bin` |
 | CMCC RAX3000M eMMC | `mediatek/filogic` / `cmcc_rax3000m` | `kmod-mt7915e`、`kmod-mt7981-firmware`、`mt7981-wo-firmware` | `*cmcc_rax3000m*initramfs-recovery.itb` | `*cmcc_rax3000m*squashfs-sysupgrade.itb` |
-| Xiaomi Redmi Router AX6000（Hanwckf U-Boot） | `mediatek/filogic` / `xiaomi_redmi-router-ax6000-ubootmod` | `kmod-mt7915e`、`kmod-mt7986-firmware`、`mt7986-wo-firmware` | `*ubootmod*initramfs-factory.ubi` | `*ubootmod*squashfs-sysupgrade.itb` |
+| Xiaomi Redmi Router AX6000（Hanwckf U-Boot） | `mediatek/filogic` / `xiaomi_redmi-router-ax6000-stock` | `kmod-mt7915e`、`kmod-mt7986-firmware`、`mt7986-wo-firmware` | `*ax6000-stock*initramfs-factory.ubi` | `*ax6000-stock*squashfs-sysupgrade.bin` |
 
 配置片段位于 `defconfig/`。其中的无线包和 `wpad-openssl` 是硬件/无线基础能力；`luci-app-openclash` 是唯一额外应用。OpenClash 的直接依赖由 `make defconfig` 解析。
 
@@ -81,8 +81,8 @@ cp -f /build-config/h3c-magic-nx30-pro-nmbm-openclash.config .config
 # CMCC RAX3000M eMMC
 # cp -f /build-config/cmcc-rax3000m-openclash.config .config
 
-# Redmi AX6000 U-Boot layout
-# cp -f /build-config/xiaomi-redmi-router-ax6000-ubootmod-openclash.config .config
+# Redmi AX6000 Hanwckf U-Boot（stock layout；不要使用 ubootmod）
+# cp -f /build-config/xiaomi-redmi-router-ax6000-stock-openclash.config .config
 
 make defconfig
 make menuconfig
