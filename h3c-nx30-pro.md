@@ -86,7 +86,7 @@ make defconfig
 构建前确认：
 
 ```sh
-grep -E 'CONFIG_TARGET_DEVICE_mediatek_filogic_DEVICE_h3c_magic-nx30-pro-nmbm|CONFIG_PACKAGE_kmod-mt7915e|CONFIG_PACKAGE_kmod-mt7981-firmware|CONFIG_PACKAGE_mt7981-wo-firmware|CONFIG_PACKAGE_luci-app-openclash' .config
+grep -E 'CONFIG_TARGET_DEVICE_mediatek_filogic_DEVICE_h3c_magic-nx30-pro-nmbm|CONFIG_PACKAGE_kmod-mt7915e|CONFIG_PACKAGE_kmod-mt7981-firmware|CONFIG_PACKAGE_mt7981-wo-firmware|CONFIG_PACKAGE_luci-compat|CONFIG_PACKAGE_luci-app-openclash' .config
 ```
 
 构建完成后，manifest 必须包含 `kmod-mt7915e`、`kmod-mt7981-firmware`、`mt7981-wo-firmware`、`wpad-openssl`。否则固件可能能启动但没有无线，禁止升级。
@@ -103,6 +103,19 @@ grep -E 'CONFIG_TARGET_DEVICE_mediatek_filogic_DEVICE_h3c_magic-nx30-pro-nmbm|CO
 1. 访问 `http://192.168.1.1`，确认 LuCI 可用。
 2. 确认 LAN、WAN 和无线 radio 均出现；无线缺失时停止，不要尝试在 LuCI 中“补开”。
 3. 确认 WAN/DNS 正常后，在“服务 → OpenClash → 版本更新”下载推荐 Mihomo 内核。
+4. 固件配置必须保留 `CONFIG_PACKAGE_luci-compat=y`。OpenClash 的插件内更新可能将被标记为 auto-installed 的 `luci-compat` 判为孤立依赖并删除；而 OpenClash 仍需要其 `luci.cbi.datatypes` 模块，删除后会导致整个 LuCI 请求报 `module 'luci.cbi.datatypes' not found`。
+
+若已发生该错误，不要反复刷新 Web 页面。通过 SSH 恢复 LuCI（须使用与当前 ImmortalWrt 24.10 固件匹配的官方 feed；不要跨发行版下载 `.ipk`）：
+
+```sh
+opkg update
+opkg install luci-compat
+opkg flag hold luci-compat
+/etc/init.d/uhttpd restart
+reboot
+```
+
+`hold` 用于保护当前恢复包不被下一次插件更新清理；固件重编并显式内置 `luci-compat` 后可取消该临时保护。若 `opkg` 报 feed 中不存在或版本不匹配，应先刷回本次构建产物，或从**同一编译输出目录**安装其 `luci-compat_*.ipk`；不要强行安装其它版本固件的 LuCI 包。恢复后执行 `opkg status luci-compat`，确认它已安装，再更新 OpenClash。
 
 ## 故障定位
 

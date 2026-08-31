@@ -19,7 +19,7 @@
 | CMCC RAX3000M eMMC | `mediatek/filogic` / `cmcc_rax3000m` | `kmod-mt7915e`、`kmod-mt7981-firmware`、`mt7981-wo-firmware` | `*cmcc_rax3000m*initramfs-recovery.itb` | `*cmcc_rax3000m*squashfs-sysupgrade.itb` |
 | Xiaomi Redmi Router AX6000（Hanwckf U-Boot） | `mediatek/filogic` / `xiaomi_redmi-router-ax6000-stock` | `kmod-mt7915e`、`kmod-mt7986-firmware`、`mt7986-wo-firmware` | `*ax6000-stock*initramfs-factory.ubi` | `*ax6000-stock*squashfs-sysupgrade.bin` |
 
-配置片段位于 `defconfig/`。其中的无线包和 `wpad-openssl` 是硬件/无线基础能力；`luci-app-openclash` 是唯一额外应用。OpenClash 的直接依赖由 `make defconfig` 解析。
+配置片段位于 `defconfig/`。其中的无线包和 `wpad-openssl` 是硬件/无线基础能力；OpenClash 及其为插件内升级保护而显式保留的 `luci-compat` 是额外应用。其余 OpenClash 直接依赖由 `make defconfig` 解析。
 
 ## 2. 建立隔离源码目录
 
@@ -88,7 +88,7 @@ make defconfig
 make menuconfig
 ```
 
-在 `menuconfig` 中只复核目标 profile、对应 `kmod-mt7915e`、`wpad-openssl` 和 `luci-app-openclash`；不要用其他机型的 defconfig 覆盖 `.config`，也不要删减设备无线驱动/固件。保存退出后：
+在 `menuconfig` 中只复核目标 profile、对应 `kmod-mt7915e`、`wpad-openssl`、`luci-compat` 和 `luci-app-openclash`；不要用其他机型的 defconfig 覆盖 `.config`，也不要删减设备无线驱动/固件。保存退出后：
 
 ```sh
 make defconfig
@@ -99,7 +99,7 @@ make defconfig
 先确认目标、OpenClash 和无线包都在 `.config`：
 
 ```sh
-grep -E 'CONFIG_TARGET_DEVICE_|CONFIG_PACKAGE_luci-app-openclash|CONFIG_PACKAGE_kmod-mt7915e|CONFIG_PACKAGE_kmod-mt798[16]-firmware|CONFIG_PACKAGE_mt798[16]-wo-firmware|CONFIG_PACKAGE_wpad-openssl' .config
+grep -E 'CONFIG_TARGET_DEVICE_|CONFIG_PACKAGE_luci-app-openclash|CONFIG_PACKAGE_luci-compat|CONFIG_PACKAGE_kmod-mt7915e|CONFIG_PACKAGE_kmod-mt798[16]-firmware|CONFIG_PACKAGE_mt798[16]-wo-firmware|CONFIG_PACKAGE_wpad-openssl' .config
 ```
 
 若目标 profile 或对应无线包缺失，停止并修正配置；不要依赖“设备 profile 应该会自动带入”。

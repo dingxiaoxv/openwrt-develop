@@ -2,6 +2,7 @@
 
 | Date | Request | Related Issue | Output |
 | --- | --- | --- | --- |
+| `2026-08-31` | diagnose NX30 Pro becoming unusable after updating OpenClash from its LuCI page | `OWRT-0004` | screenshot/error-chain matched the known OpenClash updater regression that prunes `luci-compat`; added explicit build-time pin, SSH recovery commands, issue card, report, and session note |
 | `2026-08-29` | research and complete the current Hanwckf U-Boot migration procedures for CMCC RAX3000M eMMC and Redmi AX6000 | `OWRT-0003` | verified Hanwckf release `20241115` is latest; added backup/verification/flash/recovery-WebUI flows, and corrected Redmi AX6000 from incompatible official `ubootmod` images to the Hanwckf-compatible official stock layout |
 | `2026-08-29` | preserve router-specific flashing techniques while rewriting only the common build workflow | `OWRT-0003` | rebuilt the three router guides around the official-source SOP while restoring NX30 Pro no-TTL/backup/FIP steps, CMCC eMMC migration guidance, and Redmi U-Boot/manual-core details |
 | `2026-08-29` | publish the official Debian 11 build image and remove prior build workflows from operational documentation | `OWRT-0003` | pushed and manifest-verified `dingyanxu/openwrt-buildenv:immortalwrt-official-24.10-debian11`; rewrote all router workflows around the common official-source SOP, replaced the old Debian 12 Dockerfile, and isolated old addresses in `legacy-build-environment.md` |
