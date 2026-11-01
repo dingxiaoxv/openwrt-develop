@@ -2,6 +2,22 @@
 
 | Date | Request | Related Issue | Output |
 | --- | --- | --- | --- |
+| `2026-10-30` | investigate Zashboard after core startup | `OWRT-0005` | dashboard assets and authenticated controller responded; browser symptom pending |
+| `2026-10-30` | measure memory impact of GEOSITE cn | `OWRT-0005` | no-cn copy compared and original restored; RSS ~28 MiB lower in snapshot |
+| `2026-10-30` | compare Clash memory with public reports | `OWRT-0005` | current RSS ~108 MiB; public reports vary, no population benchmark |
+| `2026-10-30` | identify optional services to reduce memory | `OWRT-0005` | netifyd ~19 MiB anonymous RSS candidate; no services disabled |
+| `2026-10-30` | test Smart core and selection groups | `OWRT-0005` | Smart test copy running, API verified, memory headroom limited |
+| `2026-10-30` | add automatic node selection and investigate Smart core | `OWRT-0005` | template adds url-test; current core non-Smart, optional Smart commented |
+| `2026-10-30` | compare reusable template with original cord.yaml | `OWRT-0005` | added local CIDRs and AI exceptions; documented omitted groups and validation limits |
+| `2026-10-30` | research and create reusable subscription configuration template | `OWRT-0005` | local low-rule template created; YAML parsed, real subscription validation pending |
+| `2026-10-30` | explain GeoSite memory usage from matching core source | `OWRT-0005` | inspected daf3ad0 loader and matcher implementation |
+| `2026-10-30` | test startup without category-ads-all | `OWRT-0005` | isolated config copy starts successfully with lower observed memory; original retained |
+| `2026-10-30` | start OpenClash and measure memory during failure | `OWRT-0005` | sampled startup and reproduced OOM; category ads loading correlates with RSS growth |
+| `2026-10-30` | investigate detailed RAM consumption and OOM root cause | `OWRT-0005` | accounted memory and vmalloc callers; substantial residual remains unattributed |
+| `2026-10-30` | check whether Zashboard failure relates to OpenClash OOM | `OWRT-0005` | core stopped, 9090 not listening, UI file present; actual URL unverified |
+| `2026-10-30` | check OpenClash dependencies on GL-MT3600BE | `OWRT-0005` | all declared direct dependencies installed; basic YAML and TUN checks passed |
+| `2026-10-30` | research OpenClash memory reports and mitigations | `OWRT-0005` | upstream reports and installed controller checked; version-specific regression unproven |
+| `2026-10-30` | investigate GL-MT3600BE OpenClash core errors via SSH | `OWRT-0005` | confirmed OOM kills; see `.codex/reports/2026-10-30_mt3600be_openclash_oom.md` |
 | `2026-08-31` | diagnose NX30 Pro becoming unusable after updating OpenClash from its LuCI page | `OWRT-0004` | screenshot/error-chain matched the known OpenClash updater regression that prunes `luci-compat`; added explicit build-time pin, SSH recovery commands, issue card, report, and session note |
 | `2026-08-29` | research and complete the current Hanwckf U-Boot migration procedures for CMCC RAX3000M eMMC and Redmi AX6000 | `OWRT-0003` | verified Hanwckf release `20241115` is latest; added backup/verification/flash/recovery-WebUI flows, and corrected Redmi AX6000 from incompatible official `ubootmod` images to the Hanwckf-compatible official stock layout |
 | `2026-08-29` | preserve router-specific flashing techniques while rewriting only the common build workflow | `OWRT-0003` | rebuilt the three router guides around the official-source SOP while restoring NX30 Pro no-TTL/backup/FIP steps, CMCC eMMC migration guidance, and Redmi U-Boot/manual-core details |

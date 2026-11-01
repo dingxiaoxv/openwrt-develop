@@ -7,3 +7,6 @@ immortalwrt-official-24.10/
 
 # Local compiler cache
 .cache/
+
+# Local router configuration may contain subscription credentials
+/config/mt3600be-cord.yaml

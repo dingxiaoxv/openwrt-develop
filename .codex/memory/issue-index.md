@@ -7,6 +7,8 @@
 | `OWRT-0003` | resolved | confirmed | 已统一为官方源码；Hanwckf U-Boot 路线已覆盖 NX30 Pro、CMCC RAX3000M eMMC 与 Redmi AX6000。AX6000 必须配合官方 stock layout，不能使用 `ubootmod` | `.codex/issues/OWRT-0003-h3c-nx30-pro-build-support.md`, `.codex/reports/2026-08-28_h3c-nx30-pro-build-support.md`, `.codex/reports/2026-08-29_hanwckf-rax3000m-ax6000-uboot.md` |
 | `OWRT-0004` | mitigated | high confidence | OpenClash 插件内更新会移除 auto-installed `luci-compat`，而其仍需要 `luci.cbi.datatypes`，从而使 LuCI 全局失败；NX30 Pro defconfig 已显式固定此依赖 | `.codex/issues/OWRT-0004-openclash-luci-compat-pruned.md`, `.codex/reports/2026-08-31_nx30-pro-openclash-update-luci-failure.md` |
 
+| `OWRT-0005` | open | confirmed | GL-MT3600BE OpenClash 启动时内存耗尽被 OOM killer 终止 | `.codex/issues/OWRT-0005-mt3600be-openclash-oom.md` |
+
 ## Notes
 
 - 如果后续只是为同一 DNS rebind 模式补充证据，继续更新 `OWRT-0001`，不要新开 issue。

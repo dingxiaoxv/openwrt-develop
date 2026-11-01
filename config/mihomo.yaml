@@ -1,0 +1,192 @@
+# GL-MT3600BE / OpenClash 配置模板
+# 【必须修改】只需将下方 subscription 的 URL 替换为你的订阅地址。
+# 【可选修改】按需要调整更新周期、健康检查地址和自定义规则。
+# 订阅需返回 Mihomo 可解析的节点格式；不要公开包含真实订阅地址的配置。
+# 当前模板尚未经真实订阅和路由器启动验证，请保留原配置以便回退。
+mixed-port: 7890
+allow-lan: false
+mode: rule
+log-level: warning
+geodata-loader: memconservative
+geosite-matcher: succinct
+
+proxy-providers:
+  subscription:
+    type: http
+    # 【必须修改】替换为完整订阅链接，保留引号；链接中的引号和反斜杠需按 YAML 转义。
+    url: "https://example.com/REPLACE_WITH_YOUR_SUBSCRIPTION"
+    path: ./proxy_provider/mt3600be-subscription.yaml
+    # 【可选】订阅更新间隔，单位秒；86400 表示每天一次。
+    interval: 86400
+    health-check:
+      enable: true
+      # 【可选】节点健康检查地址；无法访问时可换成适合你网络的测试地址。
+      url: https://www.gstatic.com/generate_204
+      # 【可选】健康检查间隔，单位秒。
+      interval: 600
+      lazy: true
+
+# 【可选】启动后在面板分别选择 Proxy、AI 和 Streaming 策略。
+proxy-groups:
+  # Proxy 可选择 Smart、Auto 或订阅中的单个节点。
+  - name: Proxy
+    type: select
+    proxies:
+      - Smart
+      - Auto
+    use:
+      - subscription
+  # AI 可选择 Proxy、地区分组或 DIRECT。
+  - name: AI
+    type: select
+    proxies:
+      - Proxy
+      - Hong Kong Auto
+      - Taiwan Auto
+      - Japan Auto
+      - South Korea Auto
+      - Singapore Auto
+      - US Auto
+      - Other Auto
+      - DIRECT
+  # Streaming 可选择 Proxy、地区分组或 DIRECT。
+  - name: Streaming
+    type: select
+    proxies:
+      - Proxy
+      - Hong Kong Auto
+      - Taiwan Auto
+      - Japan Auto
+      - South Korea Auto
+      - Singapore Auto
+      - US Auto
+      - Other Auto
+      - DIRECT
+  # Auto 根据健康检查延迟自动选择订阅节点；tolerance 单位为毫秒。
+  - name: Auto
+    type: url-test
+    use:
+      - subscription
+    tolerance: 50
+  # Smart 已启用，需使用支持 smart 类型的内核。
+  - name: Smart
+    type: smart
+    use:
+      - subscription
+    uselightgbm: false
+    collectdata: false
+  # 地区分组按节点名称筛选并根据健康检查延迟自动选择；订阅命名不同时需调整 filter。
+  # tolerance 单位为毫秒；节点名称不能保证实际出口位置。
+  - name: Hong Kong Auto
+    type: url-test
+    use:
+      - subscription
+    filter: '(?i)香港|港灣|港区|港區|Hong[ -]?Kong|\bHK\b|🇭🇰'
+    tolerance: 50
+  - name: Taiwan Auto
+    type: url-test
+    use:
+      - subscription
+    filter: '(?i)台湾|台灣|台北|新北|Taiwan|Taipei|\bTW\b|🇹🇼'
+    tolerance: 50
+  - name: Japan Auto
+    type: url-test
+    use:
+      - subscription
+    filter: '(?i)日本|东京|東京|大阪|Japan|Tokyo|Osaka|\bJP\b|🇯🇵'
+    tolerance: 50
+  - name: South Korea Auto
+    type: url-test
+    use:
+      - subscription
+    filter: '(?i)韩国|韓國|首尔|首爾|Korea|Seoul|\bKR\b|🇰🇷'
+    tolerance: 50
+  - name: Singapore Auto
+    type: url-test
+    use:
+      - subscription
+    filter: '(?i)新加坡|狮城|獅城|Singapore|\bSG\b|🇸🇬'
+    tolerance: 50
+  - name: US Auto
+    type: url-test
+    use:
+      - subscription
+    filter: '(?i)美国|美國|United States|America|\bUS\b|\bUSA\b|🇺🇸'
+    tolerance: 50
+  # Other 包含未匹配以上地区名称的节点，不代表其出口位置。
+  - name: Other Auto
+    type: url-test
+    use:
+      - subscription
+    exclude-filter: '(?i)香港|港灣|港区|港區|Hong[ -]?Kong|\bHK\b|🇭🇰|台湾|台灣|台北|新北|Taiwan|Taipei|\bTW\b|🇹🇼|日本|东京|東京|大阪|Japan|Tokyo|Osaka|\bJP\b|🇯🇵|韩国|韓國|首尔|首爾|Korea|Seoul|\bKR\b|🇰🇷|新加坡|狮城|獅城|Singapore|\bSG\b|🇸🇬|美国|美國|United States|America|\bUS\b|\bUSA\b|🇺🇸'
+    tolerance: 50
+
+rules:
+  # 本地和中国大陆直连；其余流量默认走 Proxy。
+  - GEOSITE,private,DIRECT
+  - IP-CIDR,0.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,224.0.0.0/4,DIRECT,no-resolve
+  - IP-CIDR6,::1/128,DIRECT,no-resolve
+  - IP-CIDR6,fc00::/7,DIRECT,no-resolve
+  - IP-CIDR6,fe80::/10,DIRECT,no-resolve
+  # 原配置中的 AI 域名放在中国规则之前。
+  - GEOSITE,openai,AI
+  - GEOSITE,anthropic,AI
+  - DOMAIN-SUFFIX,claude.ai,AI
+  - DOMAIN-SUFFIX,claude.com,AI
+  - DOMAIN-SUFFIX,claudeusercontent.com,AI
+  - DOMAIN-SUFFIX,chatgpt.com,AI
+  - DOMAIN-SUFFIX,oaistatic.com,AI
+  - DOMAIN-SUFFIX,oaiusercontent.com,AI
+  - DOMAIN,gemini.google.com,AI
+  - DOMAIN,aistudio.google.com,AI
+  - DOMAIN,ai.google.dev,AI
+  - DOMAIN,notebooklm.google.com,AI
+  - DOMAIN,makersuite.google.com,AI
+  - DOMAIN,generativelanguage.googleapis.com,AI
+  - DOMAIN,alkalimakersuite-pa.clients6.google.com,AI
+  - DOMAIN-SUFFIX,x.ai,AI
+  - DOMAIN-SUFFIX,grok.com,AI
+  - DOMAIN-SUFFIX,perplexity.ai,AI
+  - DOMAIN-SUFFIX,copilot.microsoft.com,AI
+  - DOMAIN-SUFFIX,cursor.com,AI
+  - DOMAIN-SUFFIX,cursor.sh,AI
+  - DOMAIN-SUFFIX,mistral.ai,AI
+  - DOMAIN-SUFFIX,meta.ai,AI
+  - DOMAIN-SUFFIX,poe.com,AI
+  - DOMAIN-SUFFIX,character.ai,AI
+  - DOMAIN-SUFFIX,openrouter.ai,AI
+  # 流媒体规则置于中国大陆规则之前；各服务共用 Streaming 策略。
+  # 域名列表并不保证覆盖各服务的所有资源，可按实际访问日志补充。
+  - DOMAIN-SUFFIX,netflix.com,Streaming
+  - DOMAIN-SUFFIX,netflix.net,Streaming
+  - DOMAIN-SUFFIX,nflxvideo.net,Streaming
+  - DOMAIN-SUFFIX,nflximg.net,Streaming
+  - DOMAIN-SUFFIX,nflxso.net,Streaming
+  - DOMAIN-SUFFIX,nflxext.com,Streaming
+  - DOMAIN-SUFFIX,hbo.com,Streaming
+  - DOMAIN-SUFFIX,hbomax.com,Streaming
+  - DOMAIN-SUFFIX,max.com,Streaming
+  - DOMAIN-SUFFIX,disneyplus.com,Streaming
+  - DOMAIN-SUFFIX,disney-plus.net,Streaming
+  - DOMAIN-SUFFIX,youtube.com,Streaming
+  - DOMAIN-SUFFIX,youtu.be,Streaming
+  - DOMAIN-SUFFIX,googlevideo.com,Streaming
+  - DOMAIN-SUFFIX,ytimg.com,Streaming
+  # 【可选】在 GEOSITE,cn 之前添加自定义分流；规则从上到下匹配。
+  # 【可选】如需沿用先前排障中验证的 OSS 例外，可取消下一行注释。
+  # - DOMAIN,dreame-eu.oss-eu-central-1.aliyuncs.com,Proxy
+  # 【可选：节省内存】在下一行开头加 #，即可关闭中国域名列表规则。
+  # 示例：# - GEOSITE,cn,DIRECT
+  # 关闭后，下面的 GEOIP,CN 仍可按解析后的中国 IP 直连；其他未匹配流量可能走 Proxy。
+  # 关闭会改变分流，请测试常用网站、公司服务及 DNS 后再长期使用。
+  - GEOSITE,cn,DIRECT
+  - GEOIP,CN,DIRECT
+  # 【可选】未匹配流量的默认去向；修改前确认目标策略组存在。
+  - MATCH,Proxy
