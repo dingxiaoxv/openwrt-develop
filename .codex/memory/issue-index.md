@@ -13,3 +13,5 @@
 
 - 如果后续只是为同一 DNS rebind 模式补充证据，继续更新 `OWRT-0001`，不要新开 issue。
 - 如果后续只是为同一 OSS TLS 握手失败模式补充证据，继续更新 `OWRT-0002`，不要新开 issue。
+
+| `OWRT-0006` | open | 待复现 | AX6000 opkg lock unlink 错误；SSH 复测成功，删除者未知 | `.codex/issues/OWRT-0006-opkg-lock-unlink.md` |

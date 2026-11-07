@@ -2,6 +2,7 @@
 
 | Date | Request | Related Issue | Output |
 | --- | --- | --- | --- |
+| `2026-11-07` | investigate AX6000 opkg lock unlink error via SSH | `OWRT-0006` | update succeeded; original error not reproduced |
 | `2026-10-30` | investigate Zashboard after core startup | `OWRT-0005` | dashboard assets and authenticated controller responded; browser symptom pending |
 | `2026-10-30` | measure memory impact of GEOSITE cn | `OWRT-0005` | no-cn copy compared and original restored; RSS ~28 MiB lower in snapshot |
 | `2026-10-30` | compare Clash memory with public reports | `OWRT-0005` | current RSS ~108 MiB; public reports vary, no population benchmark |
